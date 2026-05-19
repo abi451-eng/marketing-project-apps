@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Daily Report Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sticky Header -->
+    <div class="sticky-header">
+        <h1>📊 Financial Daily Report</h1>
+        <div class="controls">
+            <button class="config-toggle-btn" id="configToggleBtn" onclick="toggleConfig()">
+                ⚙️ KONFIGURASI
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Success Banner -->
+        <div id="successBanner" class="success-banner"></div>
+
+        <!-- Collapsible Config Section -->
+        <div class="config-section collapsed" id="configSection">
+            <div class="config-header" onclick="toggleConfig()">
+                <h2>⚙️ KONFIGURASI SISTEM</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+
+            <div class="config-content">
+                <div class="config-grid">
+                    <div class="config-group">
+                        <label>Nama Bisnis/Warung *</label>
+                        <input type="text" id="companyName" placeholder="Nama Usaha/Warung">
+                    </div>
+
+                    <div class="config-group">
+                        <label>Lokasi/Alamat *</label>
+                        <input type="text" id="ppnTitle" placeholder="Padang Bulan">
+                    </div>
+
+                    <div class="config-group">
+                        <label>Kabupaten/Kota/Provinsi *</label>
+                        <input type="text" id="location" placeholder="Papua">
+                    </div>
+
+                    <div class="config-group">
+                        <label>Nama Atasan *</label>
+                        <input type="text" id="atasanName" placeholder="Ouner Name">
+                    </div>
+                </div>
+
+                <div class="config-rates">
+                    <p><strong>⚠️ Flexible Tax & Commission Rates</strong></p>
+                    <div class="rate-inputs">
+                        <div class="config-group">
+                            <label>Tarif PPN (%)</label>
+                            <input type="number" id="ppnRate" value="10" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="config-group">
+                            <label>Tarif Royalti (%)</label>
+                            <input type="number" id="royaltiRate" value="3" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="config-group">
+                            <label>Tarif PPN pada Royalti (%)</label>
+                            <input type="number" id="ppnOnRoyaltiRate" value="11" min="0" max="100" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="save-config-btn" onclick="saveConfig()">💾 Simpan Konfigurasi</button>
+            </div>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="month-selector">
+            <label>📅 Pilih Bulan:</label>
+            <select id="monthSelect" onchange="updateUI()">
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+            </select>
+
+            <label>📆 Pilih Tahun:</label>
+            <select id="yearSelect" onchange="updateUI()">
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025" selected>2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+                <option value="2035">2035</option>
+            </select>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <h2 id="formTitle">📝 Input Data Harian</h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Hari/Tanggal *</label>
+                    <select id="daySelect"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Penjualan *</label>
+                    <input type="number" id="totalPenjualan" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Saldo Akhir/Tunai *</label>
+                    <input type="number" id="tunai" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>QRIS</label>
+                    <input type="number" id="qris" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>EDC</label>
+                    <input type="number" id="edc" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Transfer</label>
+                    <input type="number" id="transfer" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>GoJek</label>
+                    <input type="number" id="gojek" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Grab</label>
+                    <input type="number" id="grab" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Pesanan</label>
+                    <input type="number" id="pesanan" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Belanja Pagi</label>
+                    <input type="number" id="belanjaPagi" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Belanja Sore</label>
+                    <input type="number" id="belanjaSore" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Daging</label>
+                    <input type="number" id="daging" placeholder="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Dan Lain-Lain</label>
+                    <input type="number" id="dll" placeholder="0" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Keterangan</label>
+                <textarea id="keterangan" placeholder="Catatan tambahan..." rows="3"></textarea>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">💰 Total Pengeluaran (Auto)</div>
+                    <div class="stat-value" id="totalPengeluaranDisplay">Rp 0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">📊 Saldo (Auto)</div>
+                    <div class="stat-value" id="saldoDisplay">Rp 0</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="showPreview()">👁️ Preview Data</button>
+                <button class="btn btn-secondary" onclick="resetForm()" id="resetBtn" style="display:none;">🔄 Reset</button>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+            <h2>✓ Preview Data</h2>
+            <table class="preview-table">
+                <tr>
+                    <td><strong>Tanggal</strong></td>
+                    <td id="previewDay">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Penjualan</strong></td>
+                    <td id="previewTotalPenjualan">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Tunai</strong></td>
+                    <td id="previewTunai">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Pengeluaran</strong></td>
+                    <td id="previewTotalPengeluaran">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Saldo</strong></td>
+                    <td id="previewSaldo">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Keterangan</strong></td>
+                    <td id="previewKeterangan">-</td>
+                </tr>
+            </table>
+
+            <div class="button-group">
+                <button class="btn btn-success" onclick="saveData()">✓ Simpan Data</button>
+                <button class="btn btn-secondary" onclick="hidePreview()">✕ Batal</button>
+            </div>
+        </div>
+
+        <!-- Data Table Section -->
+        <div id="dataSection" style="display:none;" class="data-section">
+            <h2 id="dataTableTitle">📋 Data Bulan</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Hari</th>
+                            <th>Total Penjualan</th>
+                            <th>Tunai</th>
+                            <th>Total Pengeluaran</th>
+                            <th>Saldo</th>
+                            <th>Keterangan</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Financial Dashboard Section -->
+        <div id="dashboardSection" style="display:none;" class="dashboard-section">
+            <h2>📊 FINANCIAL DASHBOARD</h2>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">💰 Total Revenue</div>
+                    <div class="kpi-value" id="kpiRevenue">Rp 0</div>
+                    <div class="kpi-trend" id="kpiRevenueTrend">-</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">📊 Total Expense</div>
+                    <div class="kpi-value" id="kpiExpense">Rp 0</div>
+                    <div class="kpi-trend" id="kpiExpenseTrend">-</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">💎 Net Profit</div>
+                    <div class="kpi-value" id="kpiProfit">Rp 0</div>
+                    <div class="kpi-trend" id="kpiProfitTrend">-</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">📈 Profit Margin</div>
+                    <div class="kpi-value" id="kpiMargin">0%</div>
+                    <div class="kpi-trend" id="kpiMarginStatus">-</div>
+                </div>
+            </div>
+
+            <div id="trendAlert" style="display:none;"></div>
+
+            <div class="chart-container">
+                <canvas id="financialChart"></canvas>
+            </div>
+
+            <div id="trendInfo" style="display:none; background: #f0f4f7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>📈 Trend Analysis:</strong>
+                <p id="trendText" style="margin-top: 10px;"></p>
+            </div>
+        </div>
+
+        <!-- PPN Table Section -->
+        <div id="ppnSection" style="display:none;" class="data-section">
+            <h2>💰 LAPORAN PPN HARIAN</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Pendapatan (Rp)</th>
+                            <th>PPN (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ppnTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <p style="margin-top: 15px; font-size: 12px; color: #999;">
+                <strong>Keterangan:</strong> Tarif PPN = <span id="ppnRateDisplay">10</span>%
+            </p>
+        </div>
+
+        <!-- Royalti & PPN Summary Section -->
+        <div id="royaltiSection" style="display:none;" class="data-section">
+            <h2>👑 ROYALTI & PPN BULANAN</h2>
+            
+            <table class="data-table" style="width: auto; margin: 20px auto;">
+                <tbody>
+                    <tr>
+                        <td style="padding: 15px 25px; font-weight: 700; color: #1a5f7a; background: #f0f4f7;">TOTAL PENJUALAN</td>
+                        <td style="padding: 15px 25px; text-align: right; font-family: 'Courier New', monospace; font-weight: 600; color: #1a5f7a;" id="totalPenjualanRoyalti">Rp 0</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 25px; font-weight: 700; color: #1a5f7a; background: #f0f4f7;">ROYALTI <span id="royaltiRateDisplay">3</span>%</td>
+                        <td style="padding: 15px 25px; text-align: right; font-family: 'Courier New', monospace; font-weight: 600; color: #1a5f7a;" id="royaltiAmount">Rp 0</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 25px; font-weight: 700; color: #1a5f7a; background: #f0f4f7;">PPN <span id="ppnOnRoyaltiDisplay">11</span>%</td>
+                        <td style="padding: 15px 25px; text-align: right; font-family: 'Courier New', monospace; font-weight: 600; color: #1a5f7a;" id="ppnOnRoyaltiAmount">Rp 0</td>
+                    </tr>
+                    <tr style="border-top: 2px solid #1a5f7a; border-bottom: 2px solid #1a5f7a;">
+                        <td style="padding: 15px 25px; font-weight: 800; color: #1a5f7a; background: #e8f4f8;">TOTAL ROYALTI & PPN</td>
+                        <td style="padding: 15px 25px; text-align: right; font-family: 'Courier New', monospace; font-weight: 800; color: #1a5f7a; background: #e8f4f8;" id="totalRoyaltiPpn">Rp 0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 12px 25px; font-size: 12px; color: #999; font-style: italic;">(Transfer ke Cakman Malang)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Export Options -->
+        <div id="exportSection" style="display:none;" class="data-section">
+            <h2>📥 PILIHAN EXPORT</h2>
+            
+            <div class="export-options">
+                <button class="export-btn" onclick="exportGrafikDashboard()">
+                    📊 Export Grafik & Dashboard
+                    <div class="export-desc">Excel format (.xlsx)</div>
+                </button>
+
+                <button class="export-btn" onclick="exportTabelData()">
+                    📋 Export Tabel Data
+                    <div class="export-desc">Excel format (.xlsx)</div>
+                </button>
+
+                <button class="export-btn" onclick="exportPPNPDF()">
+                    📄 Export PPN Laporan
+                    <div class="export-desc">PDF format (Print-ready 300 DPI)</div>
+                </button>
+
+                <button class="export-btn" onclick="exportRoyaltiPDF()">
+                    📄 Export Royalti & PPN
+                    <div class="export-desc">PDF format (Print-ready 300 DPI)</div>
+                </button>
+            </div>
+
+            <div style="background: #e3f2fd; border-left: 4px solid #1a5f7a; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 13px;">
+                <strong>💡 Export Tips:</strong>
+                <p style="margin-top: 8px;">
+                    <strong>Excel:</strong> Untuk presentasi & analisis di Excel<br>
+                    <strong>PDF:</strong> Untuk dokumen resmi & langsung kirim ke atasan (print-ready)
+                </p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="data-section">
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div style="font-size: 18px; margin-bottom: 8px; font-weight: 600;">Belum ada data</div>
+                <div style="font-size: 13px; color: #bbb;">Mulai dengan menginput data harian di form di atas</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
