@@ -681,16 +681,16 @@
             if (data.length === 0) {
                 alert('Tidak ada data untuk di-export');
                 return;
-            }
+        }
 
             try {
-                // Create PDF with proper margins
+                // Create PDF using jsPDF
                 const jsPDF = window.jspdf.jsPDF;
                 const doc = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
                     format: 'a4'
-                });
+            });
 
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
@@ -699,7 +699,7 @@
                 
                 let yPosition = margin + 3;
 
-                // Title 1 - Nama Bisnis
+            // Title 1 - Nama Bisnis
                 doc.setFont('Arial', 'bold');
                 doc.setFontSize(13);
                 doc.text(configSettings.companyName, pageWidth / 2, yPosition, { align: 'center' });
@@ -766,42 +766,49 @@
                     yPosition += rowHeight;
                 });
 
-                // Total row
-                doc.setFont('Arial', 'bold');
-                doc.setFillColor(200, 200, 200);
-                doc.setLineWidth(0.4);
-                doc.rect(tableStartX, yPosition, col1Width, rowHeight, 'FD');
-                doc.rect(tableStartX + col1Width, yPosition, col2Width, rowHeight, 'FD');
-                doc.rect(tableStartX + col1Width + col2Width, yPosition, col3Width, rowHeight, 'FD');
+                    // Total row
+                    doc.setFont('Arial', 'bold');
+                    doc.setFillColor(200, 200, 200);
+                    doc.setLineWidth(0.4);
+                    doc.rect(tableStartX, yPosition, col1Width, rowHeight, 'FD');
+                    doc.rect(tableStartX + col1Width, yPosition, col2Width, rowHeight, 'FD');
+                    doc.rect(tableStartX + col1Width + col2Width, yPosition, col3Width, rowHeight, 'FD');
 
-                doc.setFontSize(8);
-                doc.text('JUMLAH', tableStartX + (col1Width / 2), yPosition + 4.5, { align: 'center' });
-                doc.text(totalPendapatan.toLocaleString('id-ID'), tableStartX + col1Width + col2Width - 2, yPosition + 4.5, { align: 'right' });
-                doc.text(totalPPN.toLocaleString('id-ID'), tableStartX + col1Width + col2Width + col3Width - 2, yPosition + 4.5, { align: 'right' });
+                    doc.setFontSize(8);
+                    doc.text('JUMLAH', tableStartX + (col1Width / 2), yPosition + 4.5, { align: 'center' });
+                    doc.text(totalPendapatan.toLocaleString('id-ID'), tableStartX + col1Width + col2Width - 2, yPosition + 4.5, { align: 'right' });
+                    doc.text(totalPPN.toLocaleString('id-ID'), tableStartX + col1Width + col2Width + col3Width - 2, yPosition + 4.5, { align: 'right' });
 
-                // Signature area - positioned dynamically AFTER table - RIGHT ALIGNED
-                yPosition += rowHeight + 8;
+                    // Move to signature area - with proper spacing after table
+                    yPosition += rowHeight + 8;
 
-                // Signature section - positioned to the RIGHT
-                doc.setFont('Arial', 'normal');
-                doc.setFontSize(9);
-                const signatureRightMargin = margin + 10;
-                
-                doc.text(`${configSettings.location}, ${monthName.toUpperCase()} ${year}`, pageWidth - signatureRightMargin, yPosition, { align: 'right' });
-                yPosition += 16;
+                    // Signature section - positioned dynamically AFTER table - RIGHT ALIGNED
+                    doc.setFont('Arial', 'normal');
+                    doc.setFontSize(9);
+                    const signatureRightMargin = margin + 10;
+                    
+                    doc.text(`${configSettings.location}, ${monthName.toUpperCase()} ${year}`, pageWidth - signatureRightMargin, yPosition, { align: 'right' });
+                    yPosition += 16;
 
-                doc.text(configSettings.atasanName, pageWidth - signatureRightMargin, yPosition, { align: 'right' });
+                    doc.text(configSettings.atasanName, pageWidth - signatureRightMargin, yPosition, { align: 'right' });
 
-                // Save PDF
-                const fileName = `PPN_Laporan_${monthName}_${year}.pdf`;
-                doc.save(fileName);
+                    // ✨ NEW: Generate PDF blob & open in browser
+                    const pdfBlob = doc.output('blob');
+                    const pdfUrl = URL.createObjectURL(pdfBlob);
+                    
+                    // Open di browser tab baru (preview)
+                    window.open(pdfUrl, '_blank');
+                    
+                    showSuccessMessage(`✓ PDF siap di-preview! Klik tombol download di browser untuk simpan.`);
+                    
+                    // Optional: Auto-delete blob URL setelah 5 menit
+                    setTimeout(() => URL.revokeObjectURL(pdfUrl), 300000);
 
-                showSuccessMessage(`✓ PPN Laporan berhasil di-export ke PDF!`);
-            } catch (error) {
-                console.error('PDF Export Error:', error);
-                alert('Error: ' + error.message);
+                } catch (error) {
+                    console.error('PDF Export Error:', error);
+                    alert('Error: ' + error.message);
+                }
             }
-        }
 
         function exportRoyaltiPDF() {
             const month = parseInt(document.getElementById('monthSelect').value);
@@ -901,7 +908,7 @@
                 doc.setFontSize(8);
                 doc.text('(Transfer ke Cakman Malang)', tableStartX, yPosition);
 
-                // Signature area - positioned dynamically AFTER table - RIGHT ALIGNED
+                // Signature area - positioned dynamically AFTER table
                 yPosition += 12;
 
                 doc.setFont('Arial', 'normal');
@@ -913,11 +920,18 @@
 
                 doc.text(configSettings.atasanName, pageWidth - signatureRightMargin, yPosition, { align: 'right' });
 
-                // Save PDF
-                const fileName = `Royalti_PPN_${monthName}_${year}.pdf`;
-                doc.save(fileName);
+                // ✨ NEW: Generate PDF blob & open in browser
+                const pdfBlob = doc.output('blob');
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                
+                // Open di browser tab baru (preview)
+                window.open(pdfUrl, '_blank');
+                
+                showSuccessMessage(`✓ PDF siap di-preview! Klik tombol download di browser untuk simpan.`);
+                
+                // Optional: Auto-delete blob URL setelah 5 menit
+                setTimeout(() => URL.revokeObjectURL(pdfUrl), 300000);
 
-                showSuccessMessage(`✓ Royalti & PPN Laporan berhasil di-export ke PDF!`);
             } catch (error) {
                 console.error('PDF Export Error:', error);
                 alert('Error: ' + error.message);
