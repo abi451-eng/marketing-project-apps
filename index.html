@@ -19,6 +19,22 @@
                 ⚙️ KONFIGURASI
             </button>
         </div>
+        <!-- ===== BACKUP & RESTORE DATA SECTION ===== -->
+        <div id="backup-section" style="padding: 20px; margin: 20px; border: 2px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+          <h3 style="margin-top: 0;">⚙️ Backup & Restore Data</h3>
+          <p style="font-size: 12px; color: #666;">Gunakan tombol di bawah untuk export/import data Anda</p>
+          
+          <!-- TOMBOL EXPORT -->
+          <button id="exportBtn" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;">
+            📥 Export Data
+          </button>
+          
+          <!-- TOMBOL IMPORT -->
+          <input type="file" id="fileInput" accept=".json" style="display: none;" />
+          <button id="importBtn" onclick="document.getElementById('fileInput').click()" style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; margin-left: 10px;">
+            📤 Import Data
+          </button>
+        </div>
     </div>
 
     <div class="container">
