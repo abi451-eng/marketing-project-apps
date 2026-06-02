@@ -505,6 +505,98 @@
             trendInfo.style.display = 'block';
         }
 
+        function exportData() {
+  try {
+    // Ambil semua data dari localStorage
+    const allData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      allData[key] = localStorage.getItem(key);
+    }
+
+    // Cek jika ada data
+    if (Object.keys(allData).length === 0) {
+      alert('⚠️ Tidak ada data untuk di-export!');
+      return;
+    }
+
+    // Convert ke JSON
+    const dataStr = JSON.stringify(allData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    // Buat & trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `backup-data-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    alert('✅ Data berhasil di-export! File sudah didownload.');
+  } catch (error) {
+    alert('❌ Error saat export: ' + error.message);
+    console.error(error);
+  }
+}
+
+        // ===== FUNCTION IMPORT DATA =====
+        function importData(file) {
+          if (!file) return;
+        
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            try {
+              // Parse JSON dari file
+              const importedData = JSON.parse(e.target.result);
+        
+              // Validasi
+              if (typeof importedData !== 'object' || importedData === null) {
+                alert('❌ Format file tidak valid! Harus berupa JSON object.');
+                return;
+              }
+        
+              // Konfirmasi import
+              const confirm_import = confirm(
+                `⚠️ Anda akan import ${Object.keys(importedData).length} data.\n\n` +
+                `Data lama akan diganti. Lanjutkan?`
+              );
+        
+              if (!confirm_import) {
+                alert('❌ Import dibatalkan.');
+                return;
+              }
+        
+              // Set ke localStorage
+              Object.keys(importedData).forEach(key => {
+                localStorage.setItem(key, importedData[key]);
+              });
+        
+              alert('✅ Data berhasil di-import! Halaman akan di-refresh...');
+              window.location.reload();
+        
+            } catch (error) {
+              alert('❌ Error saat import: ' + error.message);
+              console.error(error);
+            }
+          };
+        
+          reader.onerror = () => {
+            alert('❌ Error membaca file!');
+          };
+        
+          reader.readAsText(file);
+        }
+        
+        // ===== EVENT LISTENER =====
+        document.getElementById('exportBtn').addEventListener('click', exportData);
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+          importData(e.target.files[0]);
+          e.target.value = '';
+        });
+
         function updatePPNTable() {
             const month = parseInt(document.getElementById('monthSelect').value);
             const year = parseInt(document.getElementById('yearSelect').value);
